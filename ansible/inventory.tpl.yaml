@@ -1,0 +1,9 @@
+all:
+  hosts:
+    clo:
+      ansible_host: ${ANSIBLE_HOST} 
+      ansible_user: root
+      ansible_ssh_pass: ${ANSIBLE_PASSWORD}
+vm:
+  hosts:
+    clo:

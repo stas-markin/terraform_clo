@@ -1,0 +1,69 @@
+- name: get SERVER_IP_ADDRESS_RAW
+  shell: ip -o -4 route show to default | awk '{print $9}'
+  register: SERVER_IP_ADDRESS_RAW
+
+- name: get SERVER_IP_ADDRES
+  set_fact:
+    SERVER_IP_ADDRESS: "{{ SERVER_IP_ADDRESS_RAW.stdout }}"
+
+- name: Check private_key_file client for exists
+  stat:
+    path: "{{ WG_PATH }}/{{ client_name }}_privatekey"
+  register: private_key_file_client
+
+- name: Generate keys for client
+  shell: wg genkey | tee {{ WG_PATH }}/{{ client_name }}_privatekey | wg pubkey | tee {{ WG_PATH }}/{{ client_name }}_publickey
+  when: private_key_file_client.stat.exists == false
+
+- name: env server public key raw
+  shell: cat "{{ WG_PATH }}/publickey"
+  register: SERVER_PRIVATE_KEY_RAW
+
+- name: env client public key raw
+  shell: cat "{{ WG_PATH }}/{{ client_name }}_publickey"
+  register: CLIENT_PUBLIC_KEY_RAW
+
+- name: env client private key raw
+  shell: cat "{{ WG_PATH }}/{{ client_name }}_privatekey"
+  register: CLIENT_PRIVATE_KEY_RAW
+
+- name: env server public key raw
+  set_fact:
+    SERVER_PUBLIC_KEY: "{{ SERVER_PRIVATE_KEY_RAW.stdout }}"
+
+- name: env client private key raw
+  set_fact:
+    CLIENT_PRIVATE_KEY: "{{ CLIENT_PRIVATE_KEY_RAW.stdout }}"
+
+- name: env client public key raw
+  set_fact:
+    CLIENT_PUBLIC_KEY: "{{ CLIENT_PUBLIC_KEY_RAW.stdout }}"
+
+- name: Create client config path
+  file:
+    path: "{{ WG_PATH_CLIENT_CONF }}"
+    state: directory
+
+- name: Generate client .conf to client config path
+  template:
+    src: "wg0.conf.j2"
+    dest: "{{ WG_PATH_CLIENT_CONF }}"
+
+- name: edit server conf
+  lineinfile:
+    path: "{{ WG_PATH_CONF }}"
+    line: "{{ item }}"  # Строка, которую нужно добавить
+  with_items:
+    - "[Peer]"
+    - "PublicKey = {{ CLIENT_PUBLIC_KEY }}"
+    - "AllowedIPs = 10.0.0.2/32"
+
+- name: Автоматизация команды systemctl enable
+  systemd:
+    name: wg-quick@wg0
+    state: stopped
+
+- name: Автоматизация команды systemctl enable
+  systemd:
+    name: wg-quick@wg0
+    state: started

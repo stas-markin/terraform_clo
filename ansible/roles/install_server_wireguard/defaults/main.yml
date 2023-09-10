@@ -1,0 +1,3 @@
+---
+WG_PATH: '/etc/wireguard'
+WG_PATH_CONF: '/etc/wireguard/wg0.conf'

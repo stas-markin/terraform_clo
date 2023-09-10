@@ -1,0 +1,11 @@
+- name: Install wireguard server
+  hosts: clo
+  roles:
+    - role: install_server_wireguard
+      tags: [ 'server_install' ]
+
+- name: Install wireguard client
+  hosts: clo
+  roles:
+    - role: install_client_wireguard
+      tags: [ 'client_install' ]

@@ -1,0 +1,6 @@
+[Interface]
+PrivateKey = {{ SERVER_PRIVATE_KEY }}
+Address = 10.0.0.1/24
+ListenPort = 51830
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ INTERFACE_NAME }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ INTERFACE_NAME }} -j MASQUERADE
